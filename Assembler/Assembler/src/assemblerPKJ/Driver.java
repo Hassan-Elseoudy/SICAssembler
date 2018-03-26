@@ -23,6 +23,7 @@ public class Driver {
 			for (int i = 0; i < columns.length; i++)
 				if (columns[i].length() != 0)
 					out.println(columns[i]);
+			out.print(lastline);
 		}
 		try (PrintWriter out = new PrintWriter("pass2.txt")) {
 			String[] columns = WriteSicFile2(file1).toString().split("\n");

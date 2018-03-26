@@ -18,7 +18,7 @@ public class FirstPass {
 	static String pattern3 = "(\\S{1,6})(\\s+)(\\S{1,6})(\\s+)(\\S+)"; // WRREC LDX ZERO <-- Example
 	static HashMap<String, String> OPCode = new HashMap<String, String>(); // Add in OPCODE
 	static HashMap<String, String> SYMTAB = new HashMap<String, String>(); // Add in SYMTAB
-																			// Maybe we'll need ObjectHashMap
+	static 	String line,lastline;// Maybe we'll need ObjectHashMap
 	static Pattern patten1 = Pattern.compile(pattern1);
 	static Pattern patten2 = Pattern.compile(pattern2);
 	static Pattern patten3 = Pattern.compile(pattern3);
@@ -30,8 +30,8 @@ public class FirstPass {
 			FileReader fileReader = new FileReader(file);
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
 
-			String line;
 			while ((line = bufferedReader.readLine()) != null) {
+				lastline = line;
 				if (line.matches(pattern3)) {
 					Matcher matcher3 = patten3.matcher(line); // Matches the first line that contains locator
 					if (matcher3.find()) {
