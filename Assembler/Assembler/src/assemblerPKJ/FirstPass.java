@@ -83,7 +83,6 @@ public class FirstPass {
 					}
 				} else if (line.matches(pattern2)) {
 					appendItNow(line);
-
 					Matcher matcher2 = patten2.matcher(line);
 					if (matcher2.find()) {
 						locator = Integer.toHexString(Integer.parseInt(locator, 16) + 3).toUpperCase();
