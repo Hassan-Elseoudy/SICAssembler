@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 public class FirstPass {
 	static String locator;
+	static String temporary;
 	static String pattern1 = "(\\S{1,6})"; // RSUB <-- Example
 	static String pattern2 = "(\\S{1,6})(\\s+)(\\S{1,6})|(\\S{1,6})(\\s+)(\\S{1,6})(,X)"; // LDX ZERO | LDCH BUFFER,X
 	static StringBuffer intermediateFile = new StringBuffer();
@@ -35,6 +36,7 @@ public class FirstPass {
 					if (matcher3.find()) {
 						if (matcher3.group(3).equals("START")) {
 							locator = matcher3.group(5); // first Location
+							temporary = locator;
 							SYMTAB.put(matcher3.group(1), (locator));
 							appendItNow(line);
 						} else if (matcher3.group(3).equals("WORD")) {
