@@ -150,6 +150,7 @@ public class FirstPass {
 			String line;
 			while ((line = bufferedReader.readLine()) != null) {
 					line = line.replaceAll("(?m)^[\\s&&[^\\n]]+|[\\s+&&[^\\n]]+$", "");
+					if(line.length()!=0)
 					out.println(line);
 			}
 			fileReader.close();
