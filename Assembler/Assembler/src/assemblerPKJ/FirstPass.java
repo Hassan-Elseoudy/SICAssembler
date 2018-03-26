@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -139,5 +140,24 @@ public class FirstPass {
 		OPCode.put("TD", "E0");
 		OPCode.put("TIX", "2C");
 		OPCode.put("WD", "DC");
+	}
+	
+	static StringBuffer formatTheFileNow(File file) {
+		try {
+			try (PrintWriter out = new PrintWriter("Formatted!.txt")) {
+			FileReader fileReader = new FileReader(file);
+			BufferedReader bufferedReader = new BufferedReader(fileReader);
+			String line;
+			while ((line = bufferedReader.readLine()) != null) {
+					line = line.replaceAll("(?m)^[\\s&&[^\\n]]+|[\\s+&&[^\\n]]+$", "");
+					out.println(line);
+			}
+			fileReader.close();
+			}
+			// System.out.println(intermediateFile.toString());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return intermediateFile;
 	}
 }
