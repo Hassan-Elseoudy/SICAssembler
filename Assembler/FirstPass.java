@@ -17,12 +17,13 @@ public class FirstPass {
 	static HashMap<String, String> OPCode = new HashMap<String, String>(); // Add in OPCODE
 	static HashMap<String, String> SYMTAB = new HashMap<String, String>(); // Add in SYMTAB
 																			// Maybe we'll need ObjectHashMap
+	static Pattern patten1 = Pattern.compile(pattern1);
+	static Pattern patten2 = Pattern.compile(pattern2);
+	static Pattern patten3 = Pattern.compile(pattern3);
+
 
 	static StringBuffer readSicFile(File file) {
 		try {
-			Pattern patten1 = Pattern.compile(pattern1);
-			Pattern patten2 = Pattern.compile(pattern2);
-			Pattern patten3 = Pattern.compile(pattern3);
 
 			FileReader fileReader = new FileReader(file);
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
@@ -39,7 +40,7 @@ public class FirstPass {
 						} else if (matcher3.group(3).equals("WORD")) {
 							appendItNow(line);
 							SYMTAB.put(matcher3.group(1), (locator));
-							locator = Integer.toHexString(Integer.parseInt(locator, 16) + 3); // Add Word Size
+							locator = Integer.toHexString(Integer.parseInt(locator, 16) + 3).toUpperCase(); // Add Word Size
 																								// Integer to Hex, to
 																								// addition in Hexa
 
@@ -49,14 +50,14 @@ public class FirstPass {
 							appendItNow(line);
 							SYMTAB.put(matcher3.group(1), locator);
 							locator = Integer.toHexString(
-									Integer.parseInt(locator, 16) + Integer.parseInt(matcher3.group(5)) * 3);
+									Integer.parseInt(locator, 16) + Integer.parseInt(matcher3.group(5)) * 3).toUpperCase();
 						}
 
 						else if (matcher3.group(3).equals("RESB")) {
 							appendItNow(line);
 							SYMTAB.put(matcher3.group(1), locator);
 							locator = Integer
-									.toHexString(Integer.parseInt(locator, 16) + Integer.parseInt(matcher3.group(5)));
+									.toHexString(Integer.parseInt(locator, 16) + Integer.parseInt(matcher3.group(5))).toUpperCase();
 							;
 						}
 
@@ -65,16 +66,16 @@ public class FirstPass {
 							SYMTAB.put(matcher3.group(1), (locator));
 							if (matcher3.group(5).charAt(0) == 'C')
 								locator = Integer
-										.toHexString(Integer.parseInt(locator, 16) + (matcher3.group(5).length() - 3));
+										.toHexString(Integer.parseInt(locator, 16) + (matcher3.group(5).length() - 3)).toUpperCase();
 							else {
 								locator = Integer.toHexString(
-										Integer.parseInt(locator, 16) + ((matcher3.group(5).length() - 3) / 2));
+										Integer.parseInt(locator, 16) + ((matcher3.group(5).length() - 3) / 2)).toUpperCase();
 							}
 
 						} else {
 							appendItNow(line);
 							SYMTAB.put(matcher3.group(1), (locator));
-							locator = Integer.toHexString(Integer.parseInt(locator, 16) + 3);
+							locator = Integer.toHexString(Integer.parseInt(locator, 16) + 3).toUpperCase();
 						}
 					}
 				} else if (line.matches(pattern2)) {
@@ -82,13 +83,13 @@ public class FirstPass {
 
 					Matcher matcher2 = patten2.matcher(line);
 					if (matcher2.find()) {
-						locator = Integer.toHexString(Integer.parseInt(locator, 16) + 3);
+						locator = Integer.toHexString(Integer.parseInt(locator, 16) + 3).toUpperCase();
 					}
 				} else if (line.matches(pattern1)) { // Check for condition Like RSUB/JSUB
 					Matcher matcher1 = patten1.matcher(line);
 					if (matcher1.find() && OPCode.containsKey(matcher1.group(0))) {
 						appendItNow(line);
-						locator = Integer.toHexString(Integer.parseInt(locator, 16) + 3);
+						locator = Integer.toHexString(Integer.parseInt(locator, 16) + 3).toUpperCase();
 					}
 				}
 			}

@@ -5,21 +5,34 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
 import static assemblerPKJ.FirstPass.*;
+import static assemblerPKJ.SecondPass.*;
 
 public class Driver {
-	private static final String FILENAME = "X:\\Smsm\\Assembler\\SIC.txt";
+	private static final String FILENAME = "SIC.txt";
 
 	public static void main(String[] args) throws FileNotFoundException {
 		initializeOPCODE();
 		File file = new File(FILENAME);
-//		System.out.println(readSicFile(file));
-		try (PrintWriter out = new PrintWriter("filename.txt")) {
-		    out.println(readSicFile(file));
+		StringBuffer toBeAnObjectFile = readSicFile(file);
+		try (PrintWriter out = new PrintWriter("pass1.txt")) {
+			String[] columns = toBeAnObjectFile.toString().split("\n");
+			for (int i = 0; i < columns.length; i++)
+				if (columns[i].length() != 0)
+					out.println(columns[i]);
+
 		}
-
-		System.out.println("-------");
-		System.out.println(SYMTAB);
-
+		try (PrintWriter out = new PrintWriter("SYMTAB.txt")) {
+			String[] columns = SYMTAB.toString().split(",");
+			for (int i = 0; i < columns.length; i++)
+				if (columns[i].length() != 0)
+					out.println(columns[i]);
+		}
+		try (PrintWriter out = new PrintWriter("pass2.txt")) {
+			String[] columns = WriteSicFile2(file).toString().split("\n");
+			for (int i = 0; i < columns.length; i++)
+				if (columns[i].length() != 0)
+					out.println(columns[i]);
+		}
 	}
 
 }
