@@ -10,74 +10,73 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class FirstPass {
-	static String locator;
+	static String locator = "0";
 	static String temporary;
-	static String pattern1 = "(\\S{1,6})"; // RSUB <-- Example
-	static String pattern2 = "(\\S{1,6})(\\s+)(\\S{1,6})|(\\S{1,6})(\\s+)(\\S{1,6})(,X)"; // LDX ZERO | LDCH BUFFER,X
+	static String pattern1 = "(\\S{1,})"; // RSUB <-- Example
+	static String pattern2 = "(\\S{1,})(\\s+)(\\S{1,})|(\\S{1,})(\\s+)(\\S{1,})(,X)"; // LDX ZERO | LDCH BUFFER,X
+	static String pattern3 = "(\\S{1,})(\\s+)(\\S{1,})(\\s+)(\\S+)"; // WRREC LDX ZERO <-- Example
 	static StringBuffer intermediateFile = new StringBuffer();
-	static String pattern3 = "(\\S{1,6})(\\s+)(\\S{1,6})(\\s+)(\\S+)"; // WRREC LDX ZERO <-- Example
 	static HashMap<String, String> OPCode = new HashMap<String, String>(); // Add in OPCODE
 	static HashMap<String, String> SYMTAB = new HashMap<String, String>(); // Add in SYMTAB
-	static 	String line,lastline;// Maybe we'll need ObjectHashMap
+	static String line, lastline,lastloc;// Maybe we'll need ObjectHashMap
 	static Pattern patten1 = Pattern.compile(pattern1);
 	static Pattern patten2 = Pattern.compile(pattern2);
 	static Pattern patten3 = Pattern.compile(pattern3);
-
 
 	static StringBuffer readSicFile(File file) {
 		try {
 
 			FileReader fileReader = new FileReader(file);
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
-
 			while ((line = bufferedReader.readLine()) != null) {
 				lastline = line;
+				lastloc = locator;
 				if (line.matches(pattern3)) {
 					Matcher matcher3 = patten3.matcher(line); // Matches the first line that contains locator
 					if (matcher3.find()) {
 						if (matcher3.group(3).equals("START")) {
-							locator = matcher3.group(5); // first Location
-							temporary = locator;
-							SYMTAB.put(matcher3.group(1), (locator));
+							locator = Integer.toHexString(Integer.parseInt(matcher3.group(5),16)); // first Location
+							temporary = String.format("%06X", Integer.parseInt(locator,16));
+							SYMTAB.put(matcher3.group(1), String.format("%04X", Integer.parseInt(locator, 16) | 0x0000));
 							appendItNow(line);
 						} else if (matcher3.group(3).equals("WORD")) {
 							appendItNow(line);
-							SYMTAB.put(matcher3.group(1), (locator));
-							locator = Integer.toHexString(Integer.parseInt(locator, 16) + 3).toUpperCase(); // Add Word Size
-																								// Integer to Hex, to
-																								// addition in Hexa
-
+							SYMTAB.put(matcher3.group(1), (String.format("%04X", Integer.parseInt(locator, 16) | 0x0000)));
+							locator = Integer.toHexString(Integer.parseInt(locator, 16) + 3).toUpperCase();
 						}
 
 						else if (matcher3.group(3).equals("RESW")) {
 							appendItNow(line);
-							SYMTAB.put(matcher3.group(1), locator);
-							locator = Integer.toHexString(
-									Integer.parseInt(locator, 16) + Integer.parseInt(matcher3.group(5)) * 3).toUpperCase();
+							SYMTAB.put(matcher3.group(1), (String.format("%04X", Integer.parseInt(locator, 16) | 0x0000)));
+							 locator = Integer.toHexString(Integer.parseInt(locator, 16) + Integer.parseInt(matcher3.group(5)) * 3).toUpperCase();
 						}
 
 						else if (matcher3.group(3).equals("RESB")) {
 							appendItNow(line);
-							SYMTAB.put(matcher3.group(1), locator);
+							SYMTAB.put(matcher3.group(1), (String.format("%04X", Integer.parseInt(locator, 16) | 0x0000)));
 							locator = Integer
-									.toHexString(Integer.parseInt(locator, 16) + Integer.parseInt(matcher3.group(5))).toUpperCase();
+									.toHexString(Integer.parseInt(locator, 16) + Integer.parseInt(matcher3.group(5)))
+									.toUpperCase();
 							;
 						}
 
 						else if (matcher3.group(3).equals("BYTE")) {
 							appendItNow(line);
-							SYMTAB.put(matcher3.group(1), (locator));
+							SYMTAB.put(matcher3.group(1), (String.format("%04X", Integer.parseInt(locator, 16) | 0x0000)));
 							if (matcher3.group(5).charAt(0) == 'C')
 								locator = Integer
-										.toHexString(Integer.parseInt(locator, 16) + (matcher3.group(5).length() - 3)).toUpperCase();
+										.toHexString(Integer.parseInt(locator, 16) + (matcher3.group(5).length() - 3))
+										.toUpperCase();
 							else {
-								locator = Integer.toHexString(
-										Integer.parseInt(locator, 16) + ((matcher3.group(5).length() - 3) / 2)).toUpperCase();
+								locator = Integer
+										.toHexString(
+												Integer.parseInt(locator, 16) + ((matcher3.group(5).length() - 3) / 2))
+										.toUpperCase();
 							}
 
 						} else {
 							appendItNow(line);
-							SYMTAB.put(matcher3.group(1), (locator));
+							SYMTAB.put(matcher3.group(1), (String.format("%04X", Integer.parseInt(locator, 16) | 0x0000)));
 							locator = Integer.toHexString(Integer.parseInt(locator, 16) + 3).toUpperCase();
 						}
 					}
@@ -96,7 +95,6 @@ public class FirstPass {
 				}
 			}
 			fileReader.close();
-			// System.out.println(intermediateFile.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -140,21 +138,20 @@ public class FirstPass {
 		OPCode.put("TIX", "2C");
 		OPCode.put("WD", "DC");
 	}
-	
+
 	static StringBuffer formatTheFileNow(File file) {
 		try {
 			try (PrintWriter out = new PrintWriter("Formatted!.txt")) {
-			FileReader fileReader = new FileReader(file);
-			BufferedReader bufferedReader = new BufferedReader(fileReader);
-			String line;
-			while ((line = bufferedReader.readLine()) != null) {
+				FileReader fileReader = new FileReader(file);
+				BufferedReader bufferedReader = new BufferedReader(fileReader);
+				String line;
+				while ((line = bufferedReader.readLine()) != null) {
 					line = line.replaceAll("(?m)^[\\s&&[^\\n]]+|[\\s+&&[^\\n]]+$", "");
-					if(line.length()!=0)
-					out.println(line);
+					if (line.length() != 0)
+						out.println(line);
+				}
+				fileReader.close();
 			}
-			fileReader.close();
-			}
-			// System.out.println(intermediateFile.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

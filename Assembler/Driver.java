@@ -25,16 +25,15 @@ public class Driver {
 					out.println(columns[i]);
 			out.print(lastline);
 		}
+		try (PrintWriter out = new PrintWriter("SYMTAB.txt")) {
+			for (String key : SYMTAB.keySet())
+				out.println(key + " = " + SYMTAB.get(key) + "\n");
+		}
 		try (PrintWriter out = new PrintWriter("pass2.txt")) {
 			String[] columns = WriteSicFile2(file1).toString().split("\n");
 			for (int i = 0; i < columns.length; i++)
 				if (columns[i].length() != 0)
 					out.println(columns[i]);
-		}
-		try (PrintWriter out = new PrintWriter("SYMTAB.txt")) {
-			for (String key : SYMTAB.keySet())
-				out.println(key + " = " + SYMTAB.get(key) + "\n");
-		}
+		}	
 	}
-
 }

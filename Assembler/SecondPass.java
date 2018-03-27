@@ -23,7 +23,6 @@ public class SecondPass {
 	private static BufferedReader bufferedReader;
 
 	static StringBuffer WriteSicFile2(File file) {
-		String endlocator = FirstPass.locator;
 		try {
 			FileReader fileReader = new FileReader(file);
 			bufferedReader = new BufferedReader(fileReader);
@@ -72,8 +71,8 @@ public class SecondPass {
 							intermediateFilefinal.append(("H" + matcher3.group(1) + " "
 									+ String.format("%06X", Integer.parseInt(firstlocator, 16) | 0x000000) + ""
 									+ String.format("%06X",
-											Integer.parseInt(Integer.toHexString(Integer.parseInt(endlocator, 16)
-													- Integer.parseInt(firstlocator, 16) - 3), 16) | 0x000000)
+											Integer.parseInt(Integer.toHexString(Integer.parseInt(FirstPass.lastloc, 16)
+													- Integer.parseInt(firstlocator, 16)), 16)| 0x000000)
 									+ "\n").toUpperCase());
 							internalfile
 									.append("T " + String.format("%06X", Integer.parseInt(temp, 16) | 0x000000) + " ");
@@ -110,8 +109,7 @@ public class SecondPass {
 							}
 
 							else if (matcher3.group(3).equals("WORD")) {
-								internalfile
-										.append(String.format("%06d", Integer.parseInt(matcher3.group(5), 16)) + " ");
+			internalfile.append(String.format("%06d", Integer.parseInt(matcher3.group(5), 16)) + " ");
 								counter += (String.format("%06d", Integer.parseInt(matcher3.group(5), 16)) + " ")
 										.length() / 2;
 								count++;
@@ -125,23 +123,30 @@ public class SecondPass {
 					}
 				} else if (line2.matches(FirstPass.pattern2)) {
 					Matcher matcher2 = FirstPass.patten2.matcher(line2);
-					if (matcher2.find() && OPCode.containsKey(matcher2.group(1))
-							&& SYMTAB.containsKey(matcher2.group(3))) {
-						if (line2.contains(",X"))
-							internalfile.append(OPCode.get(matcher2.group(1)) + Integer.toHexString(
-									(Integer.parseInt(SYMTAB.get(matcher2.group(3)), 16) + Integer.parseInt(valueX, 2)))
-									+ " ");
-						else
-							internalfile.append(OPCode.get(matcher2.group(1)) + SYMTAB.get(matcher2.group(3)) + " ");
-						counter += (OPCode.get(matcher2.group(1)) + SYMTAB.get(matcher2.group(3)) + " ").length() / 2;
-						count++;
-					}
+					if (matcher2.find()) {
+						if (line2.matches("\\S+\\s+\\S+,X")) {
+							if (OPCode.containsKey(matcher2.group(1)) && SYMTAB
+									.containsKey(matcher2.group(3).substring(0, matcher2.group(3).length() - 2)))
+								internalfile.append(OPCode.get(matcher2.group(1))
+										+ Integer.toHexString((Integer.parseInt(SYMTAB.get(matcher2.group(3).substring(0, matcher2.group(3).length() - 2)), 16)
+												+ Integer.parseInt(valueX, 2)))
+										+ " ");
+							counter+=3;
+							count++;
 
-					if ((!SYMTAB.containsKey(matcher2.group(3)) || !OPCode.containsKey(matcher2.group(1)))
-							&& !line2.contains("END")) {
-						System.out.println(line2);
-						System.out.println("ERROR!/UNDEFINED");
-						System.exit(0);
+						} else if (OPCode.containsKey(matcher2.group(1)) && SYMTAB.containsKey(matcher2.group(3))) {
+							internalfile.append(OPCode.get(matcher2.group(1)) + SYMTAB.get(matcher2.group(3)) + " ");
+							counter += 3;
+							count++;
+						}
+
+						else if ((!SYMTAB.containsKey(matcher2.group(3)) || !OPCode.containsKey(matcher2.group(1)))
+								&& !line2.contains("END")) {
+							System.out.println(line2);
+							System.out.println("ERROR!/UNDEFINED");
+							System.exit(0);
+						}
+
 					}
 
 				} else if (line2.matches(FirstPass.pattern1)) {
