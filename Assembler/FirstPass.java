@@ -18,51 +18,46 @@ public class FirstPass {
 	static StringBuffer intermediateFile = new StringBuffer();
 	static HashMap<String, String> OPCode = new HashMap<String, String>(); // Add in OPCODE
 	static HashMap<String, String> SYMTAB = new HashMap<String, String>(); // Add in SYMTAB
-	static String line, lastline,lastloc;// Maybe we'll need ObjectHashMap
+	static String line, lastline, lastloc;// Maybe we'll need ObjectHashMap
 	static Pattern patten1 = Pattern.compile(pattern1);
 	static Pattern patten2 = Pattern.compile(pattern2);
 	static Pattern patten3 = Pattern.compile(pattern3);
 
 	static StringBuffer readSicFile(File file) {
 		try {
-
 			FileReader fileReader = new FileReader(file);
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
 			while ((line = bufferedReader.readLine()) != null) {
-				lastline = line;
 				lastloc = locator;
+				lastline = line;
 				if (line.matches(pattern3)) {
 					Matcher matcher3 = patten3.matcher(line); // Matches the first line that contains locator
 					if (matcher3.find()) {
 						if (matcher3.group(3).equals("START")) {
-							locator = Integer.toHexString(Integer.parseInt(matcher3.group(5),16)); // first Location
-							temporary = String.format("%06X", Integer.parseInt(locator,16));
-							SYMTAB.put(matcher3.group(1), String.format("%04X", Integer.parseInt(locator, 16) | 0x0000));
+							locator = Integer.toHexString(Integer.parseInt(matcher3.group(5), 16)); // first Location
+							temporary = String.format("%06X", Integer.parseInt(locator, 16));
+							checkTheSYMTAB_Now(matcher3.group(1));
 							appendItNow(line);
 						} else if (matcher3.group(3).equals("WORD")) {
 							appendItNow(line);
-							SYMTAB.put(matcher3.group(1), (String.format("%04X", Integer.parseInt(locator, 16) | 0x0000)));
+							checkTheSYMTAB_Now(matcher3.group(1));
 							locator = Integer.toHexString(Integer.parseInt(locator, 16) + 3).toUpperCase();
 						}
 
 						else if (matcher3.group(3).equals("RESW")) {
+							checkTheSYMTAB_Now(matcher3.group(1));
 							appendItNow(line);
-							SYMTAB.put(matcher3.group(1), (String.format("%04X", Integer.parseInt(locator, 16) | 0x0000)));
-							 locator = Integer.toHexString(Integer.parseInt(locator, 16) + Integer.parseInt(matcher3.group(5)) * 3).toUpperCase();
+							locator = Integer.toHexString(Integer.parseInt(locator, 16) + Integer.parseInt(matcher3.group(5)) * 3).toUpperCase();
 						}
-
 						else if (matcher3.group(3).equals("RESB")) {
+							checkTheSYMTAB_Now(matcher3.group(1));
 							appendItNow(line);
-							SYMTAB.put(matcher3.group(1), (String.format("%04X", Integer.parseInt(locator, 16) | 0x0000)));
-							locator = Integer
-									.toHexString(Integer.parseInt(locator, 16) + Integer.parseInt(matcher3.group(5)))
-									.toUpperCase();
-							;
+							locator = Integer.toHexString(Integer.parseInt(locator, 16) + Integer.parseInt(matcher3.group(5))).toUpperCase();
 						}
 
 						else if (matcher3.group(3).equals("BYTE")) {
+							checkTheSYMTAB_Now(matcher3.group(1));
 							appendItNow(line);
-							SYMTAB.put(matcher3.group(1), (String.format("%04X", Integer.parseInt(locator, 16) | 0x0000)));
 							if (matcher3.group(5).charAt(0) == 'C')
 								locator = Integer
 										.toHexString(Integer.parseInt(locator, 16) + (matcher3.group(5).length() - 3))
@@ -75,8 +70,8 @@ public class FirstPass {
 							}
 
 						} else {
+							checkTheSYMTAB_Now(matcher3.group(1));
 							appendItNow(line);
-							SYMTAB.put(matcher3.group(1), (String.format("%04X", Integer.parseInt(locator, 16) | 0x0000)));
 							locator = Integer.toHexString(Integer.parseInt(locator, 16) + 3).toUpperCase();
 						}
 					}
@@ -156,5 +151,14 @@ public class FirstPass {
 			e.printStackTrace();
 		}
 		return intermediateFile;
+	}
+
+	static void checkTheSYMTAB_Now(String test) {
+		if (!SYMTAB.containsKey(test))
+			SYMTAB.put(test, (String.format("%04X", Integer.parseInt(locator,16) | 0x0000)));
+		else {
+			System.out.println("Duplicated " + test);
+			System.exit(0);
+		}
 	}
 }
